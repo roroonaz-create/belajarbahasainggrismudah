@@ -37,21 +37,24 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(
-      { 
+      {
         user: {
           id: userData.id,
           name: userData.name,
           email: userData.email,
           level: userData.level,
           createdAt: userData.created_at,
-        } 
+        }
       },
       { status: 200 }
     )
   } catch (error) {
     console.error('Verification error:', error)
     return NextResponse.json(
-      { message: 'Token tidak valid' },
+      { 
+        message: 'Token tidak valid',
+        error: process.env.NODE_ENV === 'development' ? error : undefined
+      },
       { status: 401 }
     )
   }

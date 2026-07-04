@@ -35,6 +35,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Fetch user data from database by email
+  const fetchUserData = async (email: string) => {
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('id, name, email, level, created_at')
+      .eq('email', email)
+      .single()
+    
+    if (error || !userData) {
+      console.error('Error fetching user data:', error)
+      return null
+    }
+    
+    return {
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      level: userData.level,
+      createdAt: userData.created_at,
+    }
+  }
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -47,22 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (session) {
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('id, name, email, level, created_at')
-            .eq('email', session.user.email)
-            .single()
-
-          if (userError) {
-            console.error('Error fetching user:', userError)
-          } else if (userData) {
-            setUser({
-              id: userData.id,
-              name: userData.name,
-              email: userData.email,
-              level: userData.level,
-              createdAt: userData.created_at,
-            })
+          const userData = await fetchUserData(session.user.email)
+          if (userData) {
+            setUser(userData)
           }
         }
       } catch (error) {
@@ -74,23 +83,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkAuth()
 
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session) {
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('id, name, email, level, created_at')
-            .eq('email', session.user.email)
-            .single()
-
-          if (!error && userData) {
-            setUser({
-              id: userData.id,
-              name: userData.name,
-              email: userData.email,
-              level: userData.level,
-              createdAt: userData.created_at,
-            })
+          const userData = await fetchUserData(session.user.email)
+          if (userData) {
+            setUser(userData)
           }
         } else {
           setUser(null)
@@ -110,26 +109,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       })
 
-      if (error) throw new Error(error.message)
+      if (error) {
+        throw new Error(error.message)
+      }
 
       if (data.user) {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('id, name, email, level, created_at')
-          .eq('email', data.user.email)
-          .single()
-
-        if (userError) throw new Error('Failed to fetch user data')
-
-        setUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          level: userData.level,
-          createdAt: userData.created_at,
-        })
-
-        router.push('/learn')
+        const userData = await fetchUserData(data.user.email)
+        if (userData) {
+          setUser(userData)
+          router.push('/learn')
+        } else {
+          throw new Error('User data not found')
+        }
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -139,23 +130,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
+      // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name },
+          data: {
+            name,
+          },
         },
       })
 
       if (authError) {
-        // Handle specific Supabase errors
-        if (authError.message.includes('User already registered')) {
+        // Handle email already exists
+        if (authError.status === 400) {
           throw new Error('Email sudah terdaftar')
         }
         throw new Error(authError.message)
       }
 
-      if (!authData.user) throw new Error('Failed to create user')
+      if (!authData.user) {
+        throw new Error('Failed to create user')
+      }
 
       // Insert user into database
       const { error: dbError } = await supabase
@@ -169,23 +165,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
         ])
 
-      if (dbError) console.error('Error inserting user:', dbError)
+      if (dbError) {
+        console.error('Error inserting user:', dbError)
+        // User still created in auth, so we can proceed
+      }
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id, name, email, level, created_at')
-        .eq('email', email)
-        .single()
-
-      setUser({
-        id: userData?.id || authData.user.id,
-        name: userData?.name || name,
-        email: userData?.email || email,
-        level: userData?.level || 'A1',
-        createdAt: userData?.created_at || new Date().toISOString(),
-      })
-
-      router.push('/learn')
+      // Fetch user data
+      const userData = await fetchUserData(email)
+      if (userData) {
+        setUser(userData)
+        router.push('/learn')
+      } else {
+        // If user data not found, create it manually
+        setUser({
+          id: authData.user.id,
+          name,
+          email,
+          level: 'A1',
+          createdAt: new Date().toISOString(),
+        })
+        router.push('/learn')
+      }
     } catch (error) {
       console.error('Registration error:', error)
       throw error

@@ -20,10 +20,16 @@ export async function POST(request: Request) {
 
     if (error) {
       // Handle specific Supabase errors
-      if (error.message.includes('Invalid login credentials')) {
+      if (error.status === 400 || error.message.includes('Invalid login credentials')) {
         return NextResponse.json(
           { message: 'Email atau password salah' },
           { status: 401 }
+        )
+      }
+      if (error.status === 404 || error.message.includes('not found')) {
+        return NextResponse.json(
+          { message: 'User tidak ditemukan' },
+          { status: 404 }
         )
       }
       return NextResponse.json(
@@ -55,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { 
+      {
         user: {
           id: userData.id,
           name: userData.name,
@@ -77,7 +83,10 @@ export async function POST(request: Request) {
     
     console.error('Login error:', error)
     return NextResponse.json(
-      { message: error instanceof Error ? error.message : 'Terjadi kesalahan saat login' },
+      { 
+        message: error instanceof Error ? error.message : 'Terjadi kesalahan saat login',
+        error: process.env.NODE_ENV === 'development' ? error : undefined
+      },
       { status: 500 }
     )
   }

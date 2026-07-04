@@ -13,26 +13,27 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { name, email, password } = registerSchema.parse(body)
 
-    // Check if user already exists by trying to sign up
-    // Supabase v2 doesn't have getUserByEmail, so we use signUp and catch the error
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+    // Sign up user with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name },
+        data: {
+          name,
+        },
       },
     })
 
-    // If error is "User already registered", return error
-    if (signUpError && signUpError.message.includes('User already registered')) {
-      return NextResponse.json(
-        { message: 'Email sudah terdaftar' },
-        { status: 400 }
-      )
-    }
-
-    if (signUpError) {
-      throw new Error(signUpError.message)
+    // Handle errors
+    if (authError) {
+      // Check if email already exists
+      if (authError.status === 400 && authError.message.includes('already registered')) {
+        return NextResponse.json(
+          { message: 'Email sudah terdaftar' },
+          { status: 400 }
+        )
+      }
+      throw new Error(authError.message)
     }
 
     if (!authData.user) {
@@ -55,16 +56,30 @@ export async function POST(request: Request) {
 
     if (dbError) {
       console.error('Error inserting user:', dbError)
+      // Still return success since auth user was created
+      return NextResponse.json(
+        {
+          user: {
+            id: authData.user.id,
+            name,
+            email,
+            level: 'A1',
+            createdAt: new Date().toISOString(),
+          },
+          message: 'User created but failed to insert into database'
+        },
+        { status: 201 }
+      )
     }
 
     return NextResponse.json(
-      { 
-        user: userData || {
-          id: authData.user.id,
-          name,
-          email,
-          level: 'A1',
-          createdAt: new Date().toISOString(),
+      {
+        user: {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          level: userData.level,
+          createdAt: userData.created_at,
         }
       },
       { status: 201 }
@@ -79,7 +94,10 @@ export async function POST(request: Request) {
     
     console.error('Registration error:', error)
     return NextResponse.json(
-      { message: error instanceof Error ? error.message : 'Terjadi kesalahan saat registrasi' },
+      { 
+        message: error instanceof Error ? error.message : 'Terjadi kesalahan saat registrasi',
+        error: process.env.NODE_ENV === 'development' ? error : undefined
+      },
       { status: 500 }
     )
   }
