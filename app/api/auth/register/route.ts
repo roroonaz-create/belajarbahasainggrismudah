@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import { supabase } from '@/lib/supabase'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -16,48 +14,60 @@ export async function POST(request: Request) {
     const { name, email, password } = registerSchema.parse(body)
 
     // Check if user already exists
-    const existingUser = await db.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    )
+    const { data: { user: existingUser }, error: authError } = 
+      await supabase.auth.getUserByEmail(email)
 
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       return NextResponse.json(
         { message: 'Email sudah terdaftar' },
         { status: 400 }
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    // Create user in Supabase Auth
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+      },
+    })
 
-    // Create user
-    const result = await db.query(
-      `INSERT INTO users (name, email, password, level)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email, level, created_at`,
-      [name, email, hashedPassword, 'A1']
-    )
+    if (signUpError) {
+      throw new Error(signUpError.message)
+    }
 
-    const user = result.rows[0]
+    if (!authData.user) {
+      throw new Error('Failed to create user')
+    }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
+    // Insert user into database
+    const { data: userData, error: dbError } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: authData.user.id,
+          name,
+          email,
+          level: 'A1',
+        },
+      ])
+      .select('id, name, email, level, created_at')
+      .single()
+
+    if (dbError) {
+      console.error('Error inserting user:', dbError)
+    }
 
     return NextResponse.json(
       { 
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          level: user.level,
-          createdAt: user.created_at,
-        },
-        token 
+        user: userData || {
+          id: authData.user.id,
+          name,
+          email,
+          level: 'A1',
+          createdAt: new Date().toISOString(),
+        }
       },
       { status: 201 }
     )
@@ -71,7 +81,7 @@ export async function POST(request: Request) {
     
     console.error('Registration error:', error)
     return NextResponse.json(
-      { message: 'Terjadi kesalahan saat registrasi' },
+      { message: error instanceof Error ? error.message : 'Terjadi kesalahan saat registrasi' },
       { status: 500 }
     )
   }

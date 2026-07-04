@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import jwt from 'jsonwebtoken'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: Request) {
   try {
@@ -13,35 +12,38 @@ export async function GET(request: Request) {
       )
     }
 
-    // Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'your-secret-key'
-    ) as { userId: string; email: string }
+    // Verify token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+
+    if (error || !user) {
+      return NextResponse.json(
+        { message: 'Token tidak valid' },
+        { status: 401 }
+      )
+    }
 
     // Get user from database
-    const result = await db.query(
-      'SELECT id, name, email, level, created_at FROM users WHERE id = $1',
-      [decoded.userId]
-    )
+    const { data: userData, error: dbError } = await supabase
+      .from('users')
+      .select('id, name, email, level, created_at')
+      .eq('email', user.email)
+      .single()
 
-    if (result.rows.length === 0) {
+    if (dbError || !userData) {
       return NextResponse.json(
         { message: 'User tidak ditemukan' },
         { status: 404 }
       )
     }
 
-    const user = result.rows[0]
-
     return NextResponse.json(
       { 
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          level: user.level,
-          createdAt: user.created_at,
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          level: userData.level,
+          createdAt: userData.created_at,
         } 
       },
       { status: 200 }

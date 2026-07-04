@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import { supabase } from '@/lib/supabase'
 import { z } from 'zod'
 
 const loginSchema = z.object({
@@ -14,45 +12,51 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { email, password } = loginSchema.parse(body)
 
-    // Find user
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email])
+    // Sign in with Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-    if (result.rows.length === 0) {
+    if (error) {
       return NextResponse.json(
-        { message: 'Email atau password salah' },
+        { message: error.message || 'Email atau password salah' },
         { status: 401 }
       )
     }
 
-    const user = result.rows[0]
-
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-
-    if (!isPasswordValid) {
+    if (!data.user) {
       return NextResponse.json(
-        { message: 'Email atau password salah' },
-        { status: 401 }
+        { message: 'User tidak ditemukan' },
+        { status: 404 }
       )
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
+    // Get user data from database
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id, name, email, level, created_at')
+      .eq('email', email)
+      .single()
+
+    if (userError) {
+      console.error('Error fetching user:', userError)
+      return NextResponse.json(
+        { message: 'User data tidak ditemukan' },
+        { status: 404 }
+      )
+    }
 
     return NextResponse.json(
       { 
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          level: user.level,
-          createdAt: user.created_at,
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          level: userData.level,
+          createdAt: userData.created_at,
         },
-        token 
+        token: data.session?.access_token || ''
       },
       { status: 200 }
     )
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
     
     console.error('Login error:', error)
     return NextResponse.json(
-      { message: 'Terjadi kesalahan saat login' },
+      { message: error instanceof Error ? error.message : 'Terjadi kesalahan saat login' },
       { status: 500 }
     )
   }
