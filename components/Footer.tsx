@@ -8,6 +8,20 @@ export default function Footer() {
             <p className="text-gray-400 text-base">
               Platform belajar bahasa Inggris online terlengkap untuk pemula hingga mahir.
             </p>
+            <div className="flex gap-4">
+              <Link
+                href="/register"
+                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
+              >
+                Daftar Gratis
+              </Link>
+              <Link
+                href="/try"
+                className="px-4 py-2 border border-primary-600 text-primary-400 rounded-md hover:bg-primary-600 hover:text-white transition-colors text-sm"
+              >
+                Coba Dulu
+              </Link>
+            </div>
           </div>
 
           <div className="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
@@ -18,19 +32,24 @@ export default function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <a href="/learn" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn" className="text-base text-gray-300 hover:text-white">
                       Modul Pembelajaran
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/quiz" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/quiz" className="text-base text-gray-300 hover:text-white">
                       Quiz
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/dictionary" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/dictionary" className="text-base text-gray-300 hover:text-white">
                       Kamus
-                    </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/try" className="text-base text-gray-300 hover:text-white">
+                      Coba Gratis
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -41,24 +60,24 @@ export default function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <a href="/learn/a1" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn/a1" className="text-base text-gray-300 hover:text-white">
                       A1 - Pemula
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/learn/a2" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn/a2" className="text-base text-gray-300 hover:text-white">
                       A2 - Dasar
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/learn/b1" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn/b1" className="text-base text-gray-300 hover:text-white">
                       B1 - Menengah
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/learn/b2" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn/b2" className="text-base text-gray-300 hover:text-white">
                       B2 - Menengah Atas
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -90,3 +109,6 @@ export default function Footer() {
     </footer>
   )
 }
+
+// Import Link from next/link
+import Link from 'next/link'

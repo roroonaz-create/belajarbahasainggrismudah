@@ -190,7 +190,11 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-center text-sm text-gray-500">
-            <p>atau daftar dengan</p>
+            <p>
+              <Link href="/try" className="font-medium text-green-600 hover:text-green-500">
+                Atau coba dulu tanpa daftar
+              </Link>
+            </p>
             <div className="mt-2 flex justify-center space-x-4">
               <button className="p-2 border border-gray-300 rounded-full hover:bg-gray-50">
                 <span className="sr-only">Google</span>

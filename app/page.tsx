@@ -8,8 +8,8 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    // Redirect ke halaman learn
-    router.push('/learn')
+    // Redirect ke halaman try (coba) untuk pengunjung baru
+    router.push('/try')
   }, [router])
 
   return <Loading />

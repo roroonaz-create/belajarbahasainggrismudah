@@ -53,6 +53,16 @@ export default function Navbar() {
             >
               Kamus
             </Link>
+            <Link
+              href="/try"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/try')
+                  ? 'bg-green-100 text-green-700'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Coba Gratis
+            </Link>
             {user && (
               <Link
                 href="/profile"
@@ -70,7 +80,7 @@ export default function Navbar() {
           <div className="flex items-center">
             {user ? (
               <>
-                <span className="text-sm text-gray-500 mr-4">
+                <span className="text-sm text-gray-500 mr-4 hidden md:block">
                   Selamat datang, {user.name}
                 </span>
                 <button
