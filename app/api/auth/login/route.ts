@@ -19,8 +19,15 @@ export async function POST(request: Request) {
     })
 
     if (error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Invalid login credentials')) {
+        return NextResponse.json(
+          { message: 'Email atau password salah' },
+          { status: 401 }
+        )
+      }
       return NextResponse.json(
-        { message: error.message || 'Email atau password salah' },
+        { message: error.message || 'Terjadi kesalahan saat login' },
         { status: 401 }
       )
     }

@@ -98,7 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const login = async (email: string, password: string) => {
@@ -145,7 +147,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       })
 
-      if (authError) throw new Error(authError.message)
+      if (authError) {
+        // Handle specific Supabase errors
+        if (authError.message.includes('User already registered')) {
+          throw new Error('Email sudah terdaftar')
+        }
+        throw new Error(authError.message)
+      }
+
       if (!authData.user) throw new Error('Failed to create user')
 
       // Insert user into database

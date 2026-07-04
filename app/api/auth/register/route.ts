@@ -13,18 +13,8 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { name, email, password } = registerSchema.parse(body)
 
-    // Check if user already exists
-    const { data: { user: existingUser }, error: authError } = 
-      await supabase.auth.getUserByEmail(email)
-
-    if (existingUser) {
-      return NextResponse.json(
-        { message: 'Email sudah terdaftar' },
-        { status: 400 }
-      )
-    }
-
-    // Create user in Supabase Auth
+    // Check if user already exists by trying to sign up
+    // Supabase v2 doesn't have getUserByEmail, so we use signUp and catch the error
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -32,6 +22,14 @@ export async function POST(request: Request) {
         data: { name },
       },
     })
+
+    // If error is "User already registered", return error
+    if (signUpError && signUpError.message.includes('User already registered')) {
+      return NextResponse.json(
+        { message: 'Email sudah terdaftar' },
+        { status: 400 }
+      )
+    }
 
     if (signUpError) {
       throw new Error(signUpError.message)
