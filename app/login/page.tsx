@@ -1,23 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import Loading from '@/components/Loading'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@belajarbahasainggris.com')
-  const [password, setPassword] = useState('@@Asdf1290##')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, loading: authLoading } = useAuth()
 
   // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/learn')
+    }
+  }, [authLoading, isAuthenticated, router])
+
+  if (authLoading) {
+    return <Loading />
+  }
+
   if (isAuthenticated) {
-    router.push('/learn')
     return null
   }
 
@@ -48,17 +58,6 @@ export default function LoginPage() {
             <p className="mt-2 text-gray-600">
               Masuk untuk melanjutkan belajar
             </p>
-            
-            {/* Info Admin Credentials */}
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <p className="text-blue-800">
-                <strong>Akun Admin Default:</strong>
-              </p>
-              <p className="text-blue-600">
-                Email: admin@belajarbahasainggris.com<br />
-                Password: @@Asdf1290##
-              </p>
-            </div>
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -101,26 +100,6 @@ export default function LoginPage() {
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   placeholder="Masukkan password Anda"
                 />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                    Ingat saya
-                  </label>
-                </div>
-
-                <div className="text-sm">
-                  <Link href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                    Lupa password?
-                  </Link>
-                </div>
               </div>
             </div>
 

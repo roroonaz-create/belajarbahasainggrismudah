@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Footer() {
   return (
     <footer className="bg-gray-800 text-white">
@@ -60,22 +62,22 @@ export default function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <Link href="/learn/a1" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn#levels" className="text-base text-gray-300 hover:text-white">
                       A1 - Pemula
                     </Link>
                   </li>
                   <li>
-                    <Link href="/learn/a2" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn#levels" className="text-base text-gray-300 hover:text-white">
                       A2 - Dasar
                     </Link>
                   </li>
                   <li>
-                    <Link href="/learn/b1" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn#levels" className="text-base text-gray-300 hover:text-white">
                       B1 - Menengah
                     </Link>
                   </li>
                   <li>
-                    <Link href="/learn/b2" className="text-base text-gray-300 hover:text-white">
+                    <Link href="/learn#levels" className="text-base text-gray-300 hover:text-white">
                       B2 - Menengah Atas
                     </Link>
                   </li>
@@ -109,6 +111,3 @@ export default function Footer() {
     </footer>
   )
 }
-
-// Import Link from next/link
-import Link from 'next/link'

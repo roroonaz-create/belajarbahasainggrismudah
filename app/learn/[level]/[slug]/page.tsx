@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Loading from '@/components/Loading'
+import { getSolidBadgeClasses } from '@/lib/badgeColors'
 
 interface Lesson {
   id: number
@@ -226,7 +227,7 @@ B, C, D, F, G, H, J, K, L, M, N, P, Q, R, S, T, V, W, X, Y, Z
             <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-lg p-6 text-white">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium bg-${getCategoryColor()}-500 text-white mb-3 inline-block`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSolidBadgeClasses(getCategoryColor())} mb-3 inline-block`}>
                     {category?.name || 'Vocabulary'}
                   </span>
                   <h1 className="text-3xl font-bold">{lesson.title}</h1>

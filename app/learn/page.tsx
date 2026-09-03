@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Loading from '@/components/Loading'
+import { getBadgeClasses } from '@/lib/badgeColors'
 
 interface Level {
   code: string
@@ -199,9 +200,7 @@ export default function LearnPage() {
                 {categories.map((category) => (
                   <span
                     key={category.id}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      `bg-${category.color}-100 text-${category.color}-800`
-                    }`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeClasses(category.color)}`}
                   >
                     {category.name}
                   </span>
@@ -225,7 +224,7 @@ export default function LearnPage() {
                   >
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-3">
-                        <span className={`px-2 py-1 rounded text-xs font-medium bg-${getCategoryColor(lesson.category_id)}-100 text-${getCategoryColor(lesson.category_id)}-800`}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getBadgeClasses(getCategoryColor(lesson.category_id))}`}>
                           {getCategoryName(lesson.category_id)}
                         </span>
                         <span className="text-sm text-gray-500">

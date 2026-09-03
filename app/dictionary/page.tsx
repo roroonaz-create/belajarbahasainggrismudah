@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Loading from '@/components/Loading'
+import { getBadgeClasses } from '@/lib/badgeColors'
 
 interface Word {
   id: number
@@ -316,14 +317,14 @@ export default function DictionaryPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={`px-2 py-1 rounded text-xs font-medium bg-${partOfSpeechColors[word.part_of_speech] || 'gray'}-100 text-${partOfSpeechColors[word.part_of_speech] || 'gray'}-800`}>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getBadgeClasses(partOfSpeechColors[word.part_of_speech])}`}>
                               {partOfSpeechTranslations[word.part_of_speech] || word.part_of_speech}
                             </span>
                             <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
                               Level {word.level_code}
                             </span>
                             {word.category_id && (
-                              <span className={`px-2 py-1 rounded text-xs font-medium bg-${categories.find(c => c.id === word.category_id)?.color || 'gray'}-100 text-${categories.find(c => c.id === word.category_id)?.color || 'gray'}-800`}>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${getBadgeClasses(categories.find(c => c.id === word.category_id)?.color)}`}>
                                 {getCategoryName(word.category_id)}
                               </span>
                             )}
@@ -338,13 +339,13 @@ export default function DictionaryPage() {
                             </p>
                           )}
                         </div>
-                        <div className="mt-4 md:mt-0 md:ml-4 flex gap-2">
-                          <button className="px-3 py-1 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50">
-                            Simpan
-                          </button>
-                          <button className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-700">
+                        <div className="mt-4 md:mt-0 md:ml-4">
+                          <Link
+                            href="/learn"
+                            className="inline-block px-3 py-1 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-700"
+                          >
                             Pelajari
-                          </button>
+                          </Link>
                         </div>
                       </div>
                     </li>

@@ -44,48 +44,35 @@ export async function GET(request: Request) {
     if (authError) {
       // If user already exists in auth
       if (authError.status === 400) {
-        // Try to get the user from auth
-        const { data: { user }, error: userError } = await supabase.auth.getUserById(ADMIN_EMAIL)
-        
-        if (userError || !user) {
-          return NextResponse.json(
-            { 
-              message: 'Admin sudah ada di auth tetapi tidak di database',
-              error: authError.message
-            },
-            { status: 400 }
-          )
-        }
-        
-        // Insert into database
-        const { error: dbError } = await supabase
+        // Email is registered in auth but we cannot read it client-side;
+        // mirror the users table and report the actual state.
+        const { data: existingUserRow, error: rowError } = await supabase
           .from('users')
-          .insert([
-            {
-              id: user.id,
-              name: ADMIN_NAME,
-              email: ADMIN_EMAIL,
-              level: 'C2',
-            },
-          ])
+          .select('id, email')
+          .eq('email', ADMIN_EMAIL)
+          .single()
 
-        if (dbError) {
+        if (rowError && !rowError.message.includes('no rows')) {
+          console.error('Error checking admin:', rowError)
+        }
+
+        if (existingUserRow) {
           return NextResponse.json(
-            { 
-              message: 'Gagal menambahkan admin ke database',
-              error: dbError.message
+            {
+              message: 'Admin sudah ada',
+              email: ADMIN_EMAIL,
+              password: '*** (rahasia)'
             },
-            { status: 500 }
+            { status: 200 }
           )
         }
 
         return NextResponse.json(
-          { 
-            message: 'Admin sudah ada di auth, ditambahkan ke database',
-            email: ADMIN_EMAIL,
-            password: '*** (rahasia)'
+          {
+            message: 'Email admin sudah terdaftar di autentikasi namun belum ada di database. Hubungi administrator untuk menyelesaikan penyiapan.',
+            error: authError.message
           },
-          { status: 200 }
+          { status: 400 }
         )
       }
       
