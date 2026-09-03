@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 // Admin credentials
 const ADMIN_EMAIL = 'admin@belajarbahasainggris.com'
@@ -7,6 +7,14 @@ const ADMIN_PASSWORD = '@@Asdf1290##'
 const ADMIN_NAME = 'Admin'
 
 export async function GET(request: Request) {
+  const supabase = getSupabase()
+  if (!supabase) {
+    return NextResponse.json(
+      { message: 'Supabase belum dikonfigurasi' },
+      { status: 500 }
+    )
+  }
+
   try {
     // Check if admin already exists in database
     const { data: existingUser, error: checkError } = await supabase

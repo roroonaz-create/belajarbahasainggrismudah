@@ -17,8 +17,9 @@ const { supabaseMock } = vi.hoisted(() => {
   }
 })
 
+// Route modules import getSupabase; provide it through the shared factory.
 vi.mock('@/lib/supabase', () => ({
-  supabase: supabaseMock,
+  getSupabase: () => supabaseMock,
   default: supabaseMock,
 }))
 

@@ -19,8 +19,9 @@ const { supabaseMock } = vi.hoisted(() => {
   }
 })
 
+// Route modules import getSupabase; provide it through the shared factory.
 vi.mock('@/lib/supabase', () => ({
-  supabase: supabaseMock,
+  getSupabase: vi.fn(() => supabaseMock),
   default: supabaseMock,
 }))
 
@@ -45,6 +46,16 @@ afterEach(() => {
 })
 
 describe('GET /api/setup-admin', () => {
+  it('returns 500 when Supabase is not configured', async () => {
+    const { getSupabase } = await import('@/lib/supabase')
+    vi.mocked(getSupabase).mockReturnValueOnce(null as never)
+
+    const res = await get()
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toEqual({ message: 'Supabase belum dikonfigurasi' })
+  })
+
   it('returns the existing admin without exposing the password', async () => {
     supabaseMock.from().single.mockResolvedValueOnce({
       data: { id: 'a1', email: ADMIN_EMAIL },

@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export async function GET(request: Request) {
+  const supabase = getSupabase()
+  if (!supabase) {
+    return NextResponse.json(
+      { message: 'Supabase belum dikonfigurasi' },
+      { status: 500 }
+    )
+  }
+
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '')
 

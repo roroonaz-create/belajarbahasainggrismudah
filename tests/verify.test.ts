@@ -4,7 +4,6 @@ const { supabaseMock } = vi.hoisted(() => {
   const builder: any = {}
   builder.select = vi.fn(() => builder)
   builder.eq = vi.fn(() => builder)
-  builder.insert = vi.fn(() => builder)
   builder.single = vi.fn()
 
   return {
@@ -17,8 +16,9 @@ const { supabaseMock } = vi.hoisted(() => {
   }
 })
 
+// Route modules import getSupabase; provide it through the shared factory.
 vi.mock('@/lib/supabase', () => ({
-  supabase: supabaseMock,
+  getSupabase: () => supabaseMock,
   default: supabaseMock,
 }))
 
