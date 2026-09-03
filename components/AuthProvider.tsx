@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return
         }
 
-        if (session) {
+        if (session?.user?.email) {
           const userData = await fetchUserData(session.user.email)
           if (userData) {
             setUser(userData)
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session) {
+        if (session?.user?.email) {
           const userData = await fetchUserData(session.user.email)
           if (userData) {
             setUser(userData)
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(error.message)
       }
 
-      if (data.user) {
+      if (data.user?.email) {
         const userData = await fetchUserData(data.user.email)
         if (userData) {
           setUser(userData)
