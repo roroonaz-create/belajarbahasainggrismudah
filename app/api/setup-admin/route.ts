@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 
+// This handler talks to Supabase on every request and must never be
+// statically evaluated during `next build`.
+export const dynamic = 'force-dynamic'
+
 // Admin credentials
 const ADMIN_EMAIL = 'admin@belajarbahasainggris.com'
 const ADMIN_PASSWORD = '@@Asdf1290##'
