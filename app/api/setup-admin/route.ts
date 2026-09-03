@@ -44,10 +44,14 @@ export async function GET(request: Request) {
     if (authError) {
       // If user already exists in auth
       if (authError.status === 400) {
-        // Try to get the user from auth
-        const { data: { user }, error: userError } = await supabase.auth.getUserById(ADMIN_EMAIL)
-        
-        if (userError || !user) {
+        // User already exists in auth — sign in with the known admin
+        // credentials to retrieve their id (anon client cannot query auth users)
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: ADMIN_EMAIL,
+          password: ADMIN_PASSWORD,
+        })
+
+        if (signInError || !signInData.user) {
           return NextResponse.json(
             { 
               message: 'Admin sudah ada di auth tetapi tidak di database',
@@ -62,7 +66,7 @@ export async function GET(request: Request) {
           .from('users')
           .insert([
             {
-              id: user.id,
+              id: signInData.user.id,
               name: ADMIN_NAME,
               email: ADMIN_EMAIL,
               level: 'C2',
