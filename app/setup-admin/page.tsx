@@ -69,10 +69,6 @@ export default function SetupAdminPage() {
           <p className="text-sm text-gray-500">
             Setelah setup, Anda akan diarahkan ke halaman login.
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Email: admin@belajarbahasainggris.com<br />
-            Password: @@Asdf1290##
-          </p>
 
           <div className="mt-6">
             <Link

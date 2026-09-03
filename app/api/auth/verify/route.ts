@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
+// Never statically evaluated during next build: the handler performs live
+// Supabase calls that must not run at build time.
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '')

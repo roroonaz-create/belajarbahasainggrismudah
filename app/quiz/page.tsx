@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Loading from '@/components/Loading'
+import { getBadgeClasses } from '@/lib/badgeColors'
 
 interface Quiz {
   id: number
@@ -64,9 +65,9 @@ export default function QuizPage() {
           { id: 1, title: 'Quiz Alfabet', description: 'Test pengetahuan tentang alfabet Inggris', level_code: 'A1', category_id: 2, total_questions: 5, passing_score: 70, xp_reward: 20 },
           { id: 2, title: 'Quiz Angka', description: 'Test pengetahuan tentang angka', level_code: 'A1', category_id: 2, total_questions: 5, passing_score: 70, xp_reward: 20 },
           { id: 3, title: 'Quiz Sapaan', description: 'Test sapaan dasar', level_code: 'A1', category_id: 1, total_questions: 5, passing_score: 70, xp_reward: 25 },
-          { id: 4, title: 'Quiz Grammar A1', description: 'Test grammar tingkat A1', level_code: 'A1', category_id: 1, total_questions: 10, passing_score: 70, xp_reward: 30 },
-          { id: 5, title: 'Quiz Vocabulary A2', description: 'Test kosa kata tingkat A2', level_code: 'A2', category_id: 2, total_questions: 10, passing_score: 70, xp_reward: 35 },
-          { id: 6, title: 'Quiz Listening B1', description: 'Test listening tingkat B1', level_code: 'B1', category_id: 3, total_questions: 8, passing_score: 70, xp_reward: 40 },
+          { id: 4, title: 'Quiz Grammar A1', description: 'Test grammar tingkat A1', level_code: 'A1', category_id: 1, total_questions: 5, passing_score: 70, xp_reward: 30 },
+          { id: 5, title: 'Quiz Vocabulary A2', description: 'Test kosa kata tingkat A2', level_code: 'A2', category_id: 2, total_questions: 5, passing_score: 70, xp_reward: 35 },
+          { id: 6, title: 'Quiz Listening B1', description: 'Test listening tingkat B1', level_code: 'B1', category_id: 3, total_questions: 5, passing_score: 70, xp_reward: 40 },
         ]
 
         setLevels(mockLevels)
@@ -228,7 +229,7 @@ export default function QuizPage() {
                   >
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-3">
-                        <span className={`px-2 py-1 rounded text-xs font-medium bg-${getCategoryColor(quiz.category_id)}-100 text-${getCategoryColor(quiz.category_id)}-800`}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getBadgeClasses(getCategoryColor(quiz.category_id))}`}>
                           {getCategoryName(quiz.category_id)}
                         </span>
                         <span className="text-sm text-gray-500">
