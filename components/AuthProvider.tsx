@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 interface User {
   id: string
@@ -37,6 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch user data from database by email
   const fetchUserData = async (email: string) => {
+    const supabase = getSupabase()
+    if (!supabase) return null
+
     const { data: userData, error } = await supabase
       .from('users')
       .select('id, name, email, level, created_at')
@@ -60,6 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        const supabase = getSupabase()
+        if (!supabase) {
+          setLoading(false)
+          return
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -68,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return
         }
 
-        if (session) {
+        if (session?.user?.email) {
           const userData = await fetchUserData(session.user.email)
           if (userData) {
             setUser(userData)
@@ -84,26 +93,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session) {
-          const userData = await fetchUserData(session.user.email)
-          if (userData) {
-            setUser(userData)
+    const supabase = getSupabase()
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (session?.user?.email) {
+            const userData = await fetchUserData(session.user.email)
+            if (userData) {
+              setUser(userData)
+            }
+          } else {
+            setUser(null)
           }
-        } else {
-          setUser(null)
         }
-      }
-    )
+      )
 
-    return () => {
-      subscription.unsubscribe()
+      return () => {
+        subscription.unsubscribe()
+      }
     }
   }, [])
 
   const login = async (email: string, password: string) => {
     try {
+      const supabase = getSupabase()
+      if (!supabase) {
+        throw new Error('Supabase belum dikonfigurasi')
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -113,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(error.message)
       }
 
-      if (data.user) {
+      if (data.user?.email) {
         const userData = await fetchUserData(data.user.email)
         if (userData) {
           setUser(userData)
@@ -130,6 +147,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
+      const supabase = getSupabase()
+      if (!supabase) {
+        throw new Error('Supabase belum dikonfigurasi')
+      }
+
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -194,6 +216,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      const supabase = getSupabase()
+      if (!supabase) return
+
       await supabase.auth.signOut()
       setUser(null)
       router.push('/login')

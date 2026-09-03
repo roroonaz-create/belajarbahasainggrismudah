@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -9,6 +9,14 @@ const registerSchema = z.object({
 })
 
 export async function POST(request: Request) {
+  const supabase = getSupabase()
+  if (!supabase) {
+    return NextResponse.json(
+      { message: 'Supabase belum dikonfigurasi' },
+      { status: 500 }
+    )
+  }
+
   try {
     const body = await request.json()
     const { name, email, password } = registerSchema.parse(body)

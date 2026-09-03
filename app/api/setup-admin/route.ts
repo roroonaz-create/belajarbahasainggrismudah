@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
+
+// This handler talks to Supabase on every request and must never be
+// statically evaluated during `next build`.
+export const dynamic = 'force-dynamic'
 
 // Admin credentials
 const ADMIN_EMAIL = 'admin@belajarbahasainggris.com'
@@ -7,6 +11,14 @@ const ADMIN_PASSWORD = '@@Asdf1290##'
 const ADMIN_NAME = 'Admin'
 
 export async function GET(request: Request) {
+  const supabase = getSupabase()
+  if (!supabase) {
+    return NextResponse.json(
+      { message: 'Supabase belum dikonfigurasi' },
+      { status: 500 }
+    )
+  }
+
   try {
     // Check if admin already exists in database
     const { data: existingUser, error: checkError } = await supabase
@@ -44,8 +56,11 @@ export async function GET(request: Request) {
     if (authError) {
       // If user already exists in auth
       if (authError.status === 400) {
-        // Try to get the user from auth
-        const { data: { user }, error: userError } = await supabase.auth.getUserById(ADMIN_EMAIL)
+        // Recover the auth user via its credentials to get its id
+        const { data: { user }, error: userError } = await supabase.auth.signInWithPassword({
+          email: ADMIN_EMAIL,
+          password: ADMIN_PASSWORD,
+        })
         
         if (userError || !user) {
           return NextResponse.json(
