@@ -12,7 +12,7 @@ const { supabaseMock } = vi.hoisted(() => {
     supabaseMock: {
       auth: {
         signUp: vi.fn(),
-        getUserById: vi.fn(),
+        signInWithPassword: vi.fn(),
       },
       from: vi.fn(() => builder),
     },
@@ -34,6 +34,10 @@ beforeEach(() => {
   vi.clearAllMocks()
   supabaseMock.from().error = null
   supabaseMock.auth.signUp.mockResolvedValue({ data: { user: { id: 'a1' } }, error: null })
+  supabaseMock.auth.signInWithPassword.mockResolvedValue({
+    data: { user: { id: 'a1', email: ADMIN_EMAIL } },
+    error: null,
+  })
 })
 
 afterEach(() => {
@@ -88,7 +92,7 @@ describe('GET /api/setup-admin', () => {
       data: { user: null },
       error: { status: 400, message: 'User already registered' },
     })
-    supabaseMock.auth.getUserById.mockResolvedValueOnce({
+    supabaseMock.auth.signInWithPassword.mockResolvedValueOnce({
       data: { user: { id: 'a1', email: ADMIN_EMAIL } },
       error: null,
     })
@@ -112,7 +116,7 @@ describe('GET /api/setup-admin', () => {
       data: { user: null },
       error: { status: 400, message: 'User already registered' },
     })
-    supabaseMock.auth.getUserById.mockResolvedValueOnce({
+    supabaseMock.auth.signInWithPassword.mockResolvedValueOnce({
       data: { user: null },
       error: { message: 'not found' },
     })

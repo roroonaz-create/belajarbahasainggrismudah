@@ -44,8 +44,11 @@ export async function GET(request: Request) {
     if (authError) {
       // If user already exists in auth
       if (authError.status === 400) {
-        // Try to get the user from auth
-        const { data: { user }, error: userError } = await supabase.auth.getUserById(ADMIN_EMAIL)
+        // Recover the auth user via its credentials to get its id
+        const { data: { user }, error: userError } = await supabase.auth.signInWithPassword({
+          email: ADMIN_EMAIL,
+          password: ADMIN_PASSWORD,
+        })
         
         if (userError || !user) {
           return NextResponse.json(
